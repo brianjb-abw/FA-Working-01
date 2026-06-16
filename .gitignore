@@ -1,0 +1,17 @@
+# python cache
+__pycache__/
+
+# compiled python files
+*.pyc
+*.pyo
+
+# environment files
+.env
+.venv/
+
+# distribution files
+build/
+dist/
+
+# packaging
+*.egg-info/
