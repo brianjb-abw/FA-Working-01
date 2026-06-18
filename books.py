@@ -33,3 +33,23 @@ async def read_book(book_title: str):
     
     # if didn't find book
     return {'message': 'book not found'}    
+
+
+@app.get("/books/")
+async def read_category_by_query(category: str):
+    books_to_return = [
+        b for b in BOOKS if b['category'].casefold()==category.casefold()
+    ]
+    return books_to_return
+
+
+@app.get("/books/{book_author}/")
+async def read_author_category_by_query(book_author: str, category: str):
+    books_to_return = []
+    
+    for b in BOOKS:
+        if b['author'].casefold() == book_author.casefold() and \
+            b['category'].casefold() == category.casefold():
+                books_to_return.append(b)
+
+    return books_to_return
