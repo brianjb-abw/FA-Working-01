@@ -8,9 +8,9 @@ app = FastAPI()
 BOOKS = [
     {'title': 'Title One', 'author': 'Author One', 'category': 'science'},
     {'title': 'Title Two', 'author': 'Author Two', 'category': 'science'},
-    {'title': 'Title Three', 'author': 'Author Three', 'category': 'history'},
+    {'title': 'Title Three', 'author': 'Author Two', 'category': 'history'},
     {'title': 'Title Four', 'author': 'Author Four', 'category': 'math'},
-    {'title': 'Title Five', 'author': 'Author Five', 'category': 'math'},
+    {'title': 'Title Five', 'author': 'Author One', 'category': 'math'},
     {'title': 'Title Six', 'author': 'Author Two', 'category': 'math'}
 ]
 
@@ -40,6 +40,16 @@ async def read_category_by_query(category: str):
     books_to_return = [
         b for b in BOOKS if b['category'].casefold()==category.casefold()
     ]
+    return books_to_return
+
+
+@app.get("/books/for_author/")
+async def get_books_for_author(author: str):
+    books_to_return = []
+    for b in BOOKS:
+        if b.get('author').casefold() == author.casefold():
+            books_to_return.append(b)
+    
     return books_to_return
 
 
