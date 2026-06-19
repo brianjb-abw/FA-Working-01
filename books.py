@@ -67,17 +67,24 @@ async def create_book(new_book=Body()):
 
 @app.put("/books/update_book")
 async def update_book(edit_items=Body()):
-    books_to_return = []
 
     for b in BOOKS:
-        if b['title'].casefold() == edit_items['title'].casefold():
-            
-            if 'author' in edit_items:
-                b['author'] = edit_items['author']
-            
-            if 'category' in edit_items:
-                b['category'] = edit_items['category']
+        if b.get('title').casefold() == edit_items.get('title').casefold():
+            for k in edit_items.keys():
+                if k != 'title':
+                    b[k] = edit_items[k]
 
-            books_to_return.append(b)
+            return b
 
-    return books_to_return
+    return {"message": f"book '{edit_items['title']}' not found"}
+
+
+@app.delete("/books/remove_book/")
+async def remove_book(book_title: str):
+    for b in BOOKS:
+        if b['title'].casefold() == book_title.casefold():
+            BOOKS.remove(b)
+            return {"message": f"book '{book_title}' removed"}
+    
+    return {"message": f"book '{book_title}' not found"}
+
