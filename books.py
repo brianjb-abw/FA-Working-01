@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import Body, FastAPI
 
 # base url:  127.0.0.1:8000
 
@@ -53,3 +53,13 @@ async def read_author_category_by_query(book_author: str, category: str):
                 books_to_return.append(b)
 
     return books_to_return
+
+
+@app.post("/books/create_book")
+async def create_book(new_book=Body()):
+    BOOKS.append(new_book)
+
+    if new_book in (BOOKS):
+        return new_book
+    else:
+        return {'message': 'error'}
