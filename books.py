@@ -63,3 +63,21 @@ async def create_book(new_book=Body()):
         return new_book
     else:
         return {'message': 'error'}
+
+
+@app.put("/books/update_book")
+async def update_book(edit_items=Body()):
+    books_to_return = []
+
+    for b in BOOKS:
+        if b['title'].casefold() == edit_items['title'].casefold():
+            
+            if 'author' in edit_items:
+                b['author'] = edit_items['author']
+            
+            if 'category' in edit_items:
+                b['category'] = edit_items['category']
+
+            books_to_return.append(b)
+
+    return books_to_return
