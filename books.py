@@ -48,8 +48,8 @@ async def read_author_category_by_query(book_author: str, category: str):
     books_to_return = []
     
     for b in BOOKS:
-        if b['author'].casefold() == book_author.casefold() and \
-            b['category'].casefold() == category.casefold():
+        if b.get('author').casefold() == book_author.casefold() and \
+            b.get('category').casefold() == category.casefold():
                 books_to_return.append(b)
 
     return books_to_return
