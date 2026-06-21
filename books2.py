@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Body
-
+from pydantic import BaseModel, Field
 
 app = FastAPI()
 
@@ -19,6 +19,14 @@ class Book:
         self.rating = rating
 
 
+class BookRequest(BaseModel):
+    id: int = Field()
+    title: str = Field(min_length=3)
+    author: str = Field(min_length=1)
+    description: str = Field(min_length=1, max_length=100)
+    rating: int = Field(gt=0, lt=6)
+
+
 BOOKS = [
     Book(1, 'The art of sloth', 'doogie', 'those who eschew laziness are doing it wrong', 4),
     Book(2, 'Cooking with potato chips', 'doogie', 'a helpful couch potato skill', 2),
@@ -29,7 +37,7 @@ BOOKS = [
 ]
 
 
-# ---- Root
+# ---- Root/Test
 @app.get("/")                      
 async def api_root():              
     return "ok"
@@ -43,7 +51,8 @@ async def get_all_books():
 
 # ---- Post Book
 @app.post("/create_book")
-async def create_book(book_request = Body()):
+async def create_book(book_request: BookRequest):
+    new_book = Book(**book_request.model_dump())
     BOOKS.append(book_request)
     return {
         "message": "book added",
