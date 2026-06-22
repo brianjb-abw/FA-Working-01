@@ -1,3 +1,4 @@
+from typing import Optional
 from fastapi import FastAPI, Body
 from pydantic import BaseModel, Field
 
@@ -20,11 +21,22 @@ class Book:
 
 
 class BookRequest(BaseModel):
-    id: int = Field()
+    id: Optional[int] = Field(description='ID is not needed for create', default=None)
     title: str = Field(min_length=3)
     author: str = Field(min_length=1)
     description: str = Field(min_length=1, max_length=100)
     rating: int = Field(gt=0, lt=6)
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "title": "a new book",
+                "author": "joseph smith",
+                "description": "description of new book",
+                "rating": 5
+            }
+        }
+    }
 
 
 BOOKS = [
@@ -35,6 +47,16 @@ BOOKS = [
     Book(5, 'Lost TV classics', 'bob', 'shows that you forgot you forgot', 5),
     Book(6, 'The art of being an a-hole', 'Anderson Fozworth', 'how to provoke sue-able offenses', 3)
 ]
+
+#   ** Next ID
+def get_book_id(book: Book):
+    if len(BOOKS) > 0:
+        book.id = BOOKS[-1].id + 1
+    else:
+        book.id = 1
+    
+    return book
+
 
 
 # ---- Root/Test
@@ -49,12 +71,32 @@ async def get_all_books():
     return BOOKS
 
 
+# ---- Get books by rating
+@app.get("/books/by_rating")
+async def get_books_by_rating():
+    books_for_return = {5: [], 4: [], 3: [], 2: [], 1: []}
+    for b in BOOKS:
+        books_for_return[b.rating].append(b)
+    
+    return books_for_return
+
+
+# ---- Get single book
+@app.get("/books/{book_id}")
+async def get_single_book(book_id: int):
+    book_to_ret = [b for b in BOOKS if b.id==book_id]
+    if len(book_to_ret) > 0:
+        return book_to_ret[0]
+    else:
+        return {"message": f"book {book_id} not found"}
+
+
 # ---- Post Book
 @app.post("/create_book")
 async def create_book(book_request: BookRequest):
     new_book = Book(**book_request.model_dump())
-    BOOKS.append(book_request)
+    BOOKS.append(get_book_id(new_book))
     return {
         "message": "book added",
-        "book": book_request
+        "book": new_book
     }
