@@ -1,5 +1,5 @@
 from typing import Optional
-from fastapi import FastAPI, Body
+from fastapi import FastAPI, Body, Path, Query
 from pydantic import BaseModel, Field
 
 app = FastAPI()
@@ -12,10 +12,11 @@ class Book:
     description: str
     rating: int
 
-    def __init__(self, id, title, author, description, rating):
+    def __init__(self, id, title, author, pub_date, description, rating):
         self.id = id
         self.title = title
         self.author = author
+        self.pub_date = pub_date
         self.description = description
         self.rating = rating
 
@@ -24,6 +25,7 @@ class BookRequest(BaseModel):
     id: Optional[int] = Field(description='ID is not needed for create', default=None)
     title: str = Field(min_length=3)
     author: str = Field(min_length=1)
+    pub_date: int = Field(gt=1000, lt=2050)
     description: str = Field(min_length=1, max_length=100)
     rating: int = Field(gt=0, lt=6)
 
@@ -32,6 +34,7 @@ class BookRequest(BaseModel):
             "example": {
                 "title": "a new book",
                 "author": "joseph smith",
+                "pub_date": 1996,
                 "description": "description of new book",
                 "rating": 5
             }
@@ -40,13 +43,14 @@ class BookRequest(BaseModel):
 
 
 BOOKS = [
-    Book(1, 'The art of sloth', 'doogie', 'those who eschew laziness are doing it wrong', 4),
-    Book(2, 'Cooking with potato chips', 'doogie', 'a helpful couch potato skill', 2),
-    Book(3, 'Dark web skills', 'cryptique', 'no desc, you are either in or not', 5),
-    Book(4, 'Foz on the law', 'Anderson Fozworth', 'foz weighs in on 2026 new issues', 4),
-    Book(5, 'Lost TV classics', 'bob', 'shows that you forgot you forgot', 5),
-    Book(6, 'The art of being an a-hole', 'Anderson Fozworth', 'how to provoke sue-able offenses', 3)
+    Book(1, 'The art of sloth', 'doogie', 2022, 'those who eschew laziness are doing it wrong', 4),
+    Book(2, 'Cooking with potato chips', 'doogie', 2023, 'a helpful couch potato skill', 2),
+    Book(3, 'Dark web skills', 'cryptique', 2024, 'no desc, you are either in or not', 5),
+    Book(4, 'Foz on the law', 'Anderson Fozworth', 2026, 'foz weighs in on 2026 new issues', 4),
+    Book(5, 'Lost TV classics', 'bob', 1999, 'shows that you forgot you forgot', 5),
+    Book(6, 'The art of being an a-hole', 'Anderson Fozworth', 2005, 'how to provoke sue-able offenses', 3)
 ]
+
 
 #   ** Next ID
 def get_book_id(book: Book):
@@ -56,7 +60,6 @@ def get_book_id(book: Book):
         book.id = 1
     
     return book
-
 
 
 # ---- Root/Test
@@ -73,7 +76,7 @@ async def get_all_books():
 
 # ---- Get single book
 @app.get("/books/{book_id}")
-async def get_single_book(book_id: int):
+async def get_single_book(book_id: int = Path(gt=0)):
     book_to_ret = [b for b in BOOKS if b.id==book_id]
     if len(book_to_ret) > 0:
         return book_to_ret[0]
@@ -83,8 +86,16 @@ async def get_single_book(book_id: int):
 
 # ---- Get books by rating
 @app.get("/books/")
-async def get_book_by_rating(book_rating: int):
+async def get_books_by_rating(book_rating: int = Query(gt=0, lt=6)):
     books_to_return = [b for b in BOOKS if b.rating == book_rating]
+
+    return books_to_return
+
+
+# ---- Get books by pub date
+@app.get("/books/by_pub/")
+async def get_books_by_pub_date(pub_date: int):
+    books_to_return = [b for b in BOOKS if b.pub_date == pub_date]
 
     return books_to_return
 
@@ -114,7 +125,7 @@ async def update_book(book: BookRequest):
 
 # ---- Delete Book
 @app.delete("/books/{book_id}")
-async def delete_book(book_id: int):
+async def delete_book(book_id: int = Path(gt=0)):
     for b in BOOKS:
         if b.id == book_id:
             BOOKS.remove(b)
