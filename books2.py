@@ -98,3 +98,28 @@ async def create_book(book_request: BookRequest):
         "message": "book added",
         "book": new_book
     }
+
+
+# ---- Put Book Update
+@app.put("/books/update_book")
+async def update_book(book: BookRequest):
+    for i in range(len(BOOKS)):
+        if BOOKS[i].id == book.id:
+            BOOKS[i] = book
+            return {"message": f"book {book.id} updated", "book": book}
+    
+    # not found
+    return {"message": f"book {book.id} not found - no update"}
+
+
+# ---- Delete Book
+@app.delete("/books/{book_id}")
+async def delete_book(book_id: int):
+    for b in BOOKS:
+        if b.id == book_id:
+            BOOKS.remove(b)
+
+            return {"message": f"book {book_id} deleted"}
+
+    # not found
+    return {"message": f"book {book_id} not found - no delete"}
