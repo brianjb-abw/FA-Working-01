@@ -71,16 +71,6 @@ async def get_all_books():
     return BOOKS
 
 
-# ---- Get books by rating
-@app.get("/books/by_rating")
-async def get_books_by_rating():
-    books_for_return = {5: [], 4: [], 3: [], 2: [], 1: []}
-    for b in BOOKS:
-        books_for_return[b.rating].append(b)
-    
-    return books_for_return
-
-
 # ---- Get single book
 @app.get("/books/{book_id}")
 async def get_single_book(book_id: int):
@@ -89,6 +79,14 @@ async def get_single_book(book_id: int):
         return book_to_ret[0]
     else:
         return {"message": f"book {book_id} not found"}
+
+
+# ---- Get books by rating
+@app.get("/books/")
+async def get_book_by_rating(book_rating: int):
+    books_to_return = [b for b in BOOKS if b.rating == book_rating]
+
+    return books_to_return
 
 
 # ---- Post Book
