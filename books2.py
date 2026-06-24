@@ -102,7 +102,7 @@ async def get_books_by_pub_date(pub_date: int):
 
 
 # ---- Post Book
-@app.post("/create_book")
+@app.post("/create_book", status_code=status.HTTP_201_CREATED)
 async def create_book(book_request: BookRequest):
     new_book = Book(**book_request.model_dump())
     BOOKS.append(get_book_id(new_book))
@@ -124,13 +124,12 @@ async def update_book(book: BookRequest):
     
 
 # ---- Delete Book
-@app.delete("/books/{book_id}")
+@app.delete("/books/{book_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_book(book_id: int = Path(gt=0)):
     for b in BOOKS:
         if b.id == book_id:
             BOOKS.remove(b)
-
-            return {"message": f"book {book_id} deleted"}
+            return
 
     # not found
     return {"message": f"book {book_id} not found - no delete"}
